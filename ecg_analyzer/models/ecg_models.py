@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field, field_validator, model_validator
 import math
 
@@ -35,23 +37,13 @@ class ECGLeads(BaseModel):
 
 class ECGModel(BaseModel):
     patient_id: str = Field(..., min_length=1, description="Patient ID")
-    sample_rate: int = Field(
-        ...,
-        gt=0,
-        description="Sampling rate in Hz",
-        examples=[500]
-    )
-    leads: ECGLeads = Field(
-        ...,
-        description="12-lead ECG signal data (12×N matrix)"
-    )
+    sample_rate: Literal[100, 500] = Field(..., description="Sampling rate in Hz")
+    leads: ECGLeads = Field(..., description="12-lead ECG signal data (12×N matrix)")
 
     @model_validator(mode="after")
     def check_duration(self) -> "ECGModel":
         n_samples = len(self.leads.I)
         duration = n_samples / self.sample_rate
-        if duration < MIN_DURATION_SEC:
-            raise ValueError(
-                f"ECG too short: {duration:.2f}s, minimum required is {_MIN_DURATION_SEC}s"
-            )
+        if duration < _MIN_DURATION_SEC:
+            raise ValueError(f"ECG too short: {duration:.2f}s, minimum required is {_MIN_DURATION_SEC}s")
         return self
