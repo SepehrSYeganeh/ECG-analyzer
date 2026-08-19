@@ -4,6 +4,12 @@ import wfdb
 import ast
 from pathlib import Path
 
+data_path = Path(__file__).resolve().parents[1] / "data" / "ptb-xl"
+
+# Load scp_statements.csv for diagnostic aggregation
+agg_df = pd.read_csv(data_path / 'scp_statements.csv', index_col=0)
+agg_df = agg_df[agg_df.diagnostic == 1]
+
 
 def load_raw_data(df: pd.DataFrame, sampling_rate: int, path: Path) -> np.ndarray:
     if sampling_rate == 100:
@@ -22,21 +28,41 @@ def aggregate_diagnostic(y_dic: dict) -> list[list[str]]:
     return list(set(tmp))
 
 
-if __name__ == '__main__':
-    data_path = Path(__file__).resolve().parents[1] / "data" / "ptb-xl"
+def train_test_split(X_path: Path, Y_path: Path, sample_rate: int):
+    X = np.load(X_path)
+    Y = pd.read_parquet(Y_path)
 
+    # Split data into train and test
+    test_fold = 10
+
+    # Train
+    np.save(
+        data_path.parent / f"X_train_{sample_rate}.npy",
+        X[np.where(Y.strat_fold != test_fold)]
+    )
+    Y[(Y.strat_fold != test_fold)].diagnostic_superclass.to_pickle(
+        data_path.parent / f"y_train_{sample_rate}.parquet"
+    )
+
+    # Test
+    np.save(
+        data_path.parent / f"X_test_{sample_rate}.npy",
+        X[np.where(Y.strat_fold == test_fold)]
+    )
+    Y[Y.strat_fold == test_fold].diagnostic_superclass.to_pickle(
+        data_path.parent / f"y_test_{sample_rate}.parquet"
+    )
+
+
+def save_raw_data():
     # load and convert annotation data
     Y = pd.read_csv(data_path / 'ptbxl_database.csv', index_col='ecg_id')
     Y.scp_codes = Y.scp_codes.apply(lambda x: ast.literal_eval(x))
 
-    # Load scp_statements.csv for diagnostic aggregation
-    agg_df = pd.read_csv(data_path / 'scp_statements.csv', index_col=0)
-    agg_df = agg_df[agg_df.diagnostic == 1]
-
     # Apply diagnostic superclass
     Y['diagnostic_superclass'] = Y.scp_codes.apply(aggregate_diagnostic)
 
-    # save
+    # save metadata
     Y.to_parquet(data_path.parent / "metadata.parquet")
     print("saved metadata")
 
