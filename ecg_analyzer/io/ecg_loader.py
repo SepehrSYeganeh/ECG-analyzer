@@ -27,6 +27,7 @@ def load_ecg_file(
         raise FileNotFoundError(f".dat file not found: {dat_file}")
 
     rec = wfdb.rdrecord(base_path)
+
     leads = ECGLeads(
         **dict(zip(rec.sig_name, rec.p_signal.transpose()))
     )

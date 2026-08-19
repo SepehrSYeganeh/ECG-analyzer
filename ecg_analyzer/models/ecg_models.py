@@ -1,5 +1,7 @@
 from typing import Literal, Sequence
 from pydantic import BaseModel, Field, field_validator, model_validator
+from wfdb import Record
+import numpy as np
 import math
 
 _MIN_DURATION_SEC = 2.5
@@ -48,3 +50,15 @@ class ECGRecord(BaseModel):
         if duration < _MIN_DURATION_SEC:
             raise ValueError(f"ECG too short: {duration:.2f}s, minimum required is {_MIN_DURATION_SEC}s")
         return self
+
+    def to_Record(self) -> Record:
+        """Convert ECGRecord to a wfdb.Record object"""
+        leads = self.leads.model_dump()
+        sig_name = list(leads.keys())
+        p_signal = np.array(list(leads.values())).transpose()
+        return Record(
+            sig_name=sig_name,
+            p_signal=p_signal,
+            fs=self.sample_rate,
+            units=self.units
+        )
