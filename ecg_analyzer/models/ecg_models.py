@@ -1,5 +1,4 @@
 from typing import Literal, Sequence
-
 from pydantic import BaseModel, Field, field_validator, model_validator
 import math
 
@@ -19,7 +18,6 @@ class ECGLeads(BaseModel):
     V4: list[float] = Field(..., min_length=1, description="Precordial lead V4 samples")
     V5: list[float] = Field(..., min_length=1, description="Precordial lead V5 samples")
     V6: list[float] = Field(..., min_length=1, description="Precordial lead V6 samples")
-    units: Sequence[str] | None = Field(description="ECG units")
 
     @field_validator("I", "II", "III", "AVR", "AVL", "AVF", "V1", "V2", "V3", "V4", "V5", "V6")
     @classmethod
@@ -37,9 +35,10 @@ class ECGLeads(BaseModel):
 
 
 class ECGRecord(BaseModel):
+    leads: ECGLeads = Field(..., description="12-lead ECG signal data (12×N matrix)")
     patient_id: str = Field(..., min_length=1, description="Patient ID")
     sample_rate: Literal[100, 500] = Field(..., description="Sampling rate in Hz")
-    leads: ECGLeads = Field(..., description="12-lead ECG signal data (12×N matrix)")
+    units: Sequence[str] | None = Field(default=None, description="ECG units", min_length=12, max_length=12)
     metadata: dict | None = Field(description="ECG metadata")
 
     @model_validator(mode="after")
