@@ -35,6 +35,22 @@ class ECGLeads(BaseModel):
             raise ValueError(f"All 12 leads must have equal sample length, got: {lengths}")
         return self
 
+    @staticmethod
+    def from_numpy(array: np.ndarray) -> "ECGLeads":
+        if not isinstance(array, np.ndarray):
+            raise TypeError(f"Input must be numpy.ndarray, got {type(array)}")
+        if array.ndim != 2 or array.shape[0] != 12:
+            raise ValueError("Array must be 2D with shape (12, n_samples)")
+        if not np.isfinite(array).all():
+            raise ValueError("Signal contains NaN or infinite values")
+
+        lead_names = ["I", "II", "III", "AVR", "AVL", "AVF", "V1", "V2", "V3", "V4", "V5", "V6"]
+        data = {name: array[i].astype(float).tolist() for i, name in enumerate(lead_names)}
+        return ECGLeads(**data)
+
+    def to_numpy(self) -> np.ndarray:
+        return np.array(list(self.model_dump().values()))
+
 
 class ECGRecord(BaseModel):
     leads: ECGLeads = Field(..., description="12-lead ECG signal data (12×N matrix)")

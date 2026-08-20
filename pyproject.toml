@@ -13,5 +13,6 @@ dependencies = [
     "pandas>=3.0.5",
     "pyarrow>=25.0.1",
     "pydantic>=2.13.4",
+    "scipy>=1.17.1",
     "wfdb>=4.3.1",
 ]
