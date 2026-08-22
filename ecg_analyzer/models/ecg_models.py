@@ -67,6 +67,19 @@ class ECGRecord(BaseModel):
             raise ValueError(f"ECG too short: {duration:.2f}s, minimum required is {_MIN_DURATION_SEC}s")
         return self
 
+    @staticmethod
+    def from_Record(rec: Record, patient_id: str, metadata: dict) -> "ECGRecord":
+        leads = ECGLeads(
+            **dict(zip(rec.sig_name, rec.p_signal.transpose()))
+        )
+        return ECGRecord(
+            leads=leads,
+            patient_id=patient_id,
+            sample_rate=rec.fs,
+            units=rec.units,
+            metadata=metadata
+        )
+
     def to_Record(self) -> Record:
         """Convert ECGRecord to a wfdb.Record object"""
         leads = self.leads.model_dump()

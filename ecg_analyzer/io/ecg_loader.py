@@ -26,18 +26,8 @@ def load_ecg_file(
     if not dat_file.is_file():
         raise FileNotFoundError(f".dat file not found: {dat_file}")
 
-    rec = wfdb.rdrecord(base_path)
-
-    leads = ECGLeads(
-        **dict(zip(rec.sig_name, rec.p_signal.transpose()))
+    return ECGRecord.from_Record(
+        wfdb.rdrecord(base_path),
+        patient_id,
+        metadata
     )
-
-    ecg_rec = ECGRecord(
-        leads=leads,
-        patient_id=patient_id,
-        sample_rate=rec.fs,
-        units=rec.units,
-        metadata=metadata
-    )
-
-    return ecg_rec

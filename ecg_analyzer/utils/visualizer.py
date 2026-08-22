@@ -2,12 +2,20 @@ import wfdb
 from ecg_analyzer.models import ECGRecord
 
 
-def plot_ecg(ecg_record: ECGRecord, return_fig: bool = False):
+def plot_ecg(
+        ecg_record: ECGRecord,
+        return_fig: bool = False,
+        title: str = None,
+):
     """
-    :param ecg_record:
-    :param return_fig: if True, return a matplotlib figure
+    :param ecg_record:  ECGRecord
+    :param return_fig:  If True, return a matplotlib figure
+    :param title:       The title of the figure
+
+    :return:            matplotlib figure or None
     """
-    title = f"ECG patient id: {ecg_record.patient_id}"
+    if title is None:
+        title = f"ECG patient id: {ecg_record.patient_id}"
     record = ecg_record.to_Record()
     result = wfdb.plot_wfdb(
         record,
