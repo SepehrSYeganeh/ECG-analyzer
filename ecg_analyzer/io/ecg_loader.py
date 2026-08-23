@@ -1,6 +1,6 @@
 import wfdb
 from pathlib import Path
-from ecg_analyzer.models import ECGRecord, ECGLeads
+from ecg_analyzer.models import ECGRecord
 
 
 def load_ecg_file(

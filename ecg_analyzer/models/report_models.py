@@ -1,16 +1,25 @@
 from pydantic import BaseModel, Field
-from typing import Literal, Any
+import numpy as np
 from wfdb import Annotation
 from .ecg_models import ECGRecord
 
 
 class ECGAnalysisResult(BaseModel):
-    patient_id: str = Field(..., description="Patient ID")
-    record: ECGRecord = Field(..., description="ECG record")
-    ann: Annotation = Field(..., description="Annotation")
-    # TODO: signal_quality: Literal["low", "medium", "high"] = Field(..., description="Signal quality")
-    # TODO: heart rate
-    # TODO: Rhythm-related basic measurements, PR, QRS, QT/QTc
-    # TODO: intervals
-    # TODO: ST-related Findings
-    # TODO: Findings requiring physician review
+    filtered_record: ECGRecord = Field(..., description="Filtered ECG record")
+    duration: float = Field(..., description="Duration (ms)")
+    r_peaks: list[int] = Field(..., description="R-peaks indices")
+    rr_intervals: list[float] = Field(..., description="RR intervals (ms)")
+    instantaneous_heart_rate: list[float] = Field(..., description="Instantaneous heart rate (BPM)")
+    average_heart_rate: float = Field(..., description="Average heart rate (BPM)")
+    symbols: list[str] = Field(..., description="Beat symbols")
+
+    def to_Annotation(self) -> Annotation:
+        num_channels = 12
+        return Annotation(
+            record_name=self.filtered_record.patient_id,
+            extension="atr",
+            fs=self.filtered_record.sample_rate,
+            sample=np.tile(self.r_peaks, num_channels),
+            symbol=self.symbols * num_channels,
+            chan=np.repeat(np.arange(num_channels), len(self.r_peaks))
+        )

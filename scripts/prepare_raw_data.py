@@ -28,7 +28,7 @@ def aggregate_diagnostic(y_dic: dict) -> list[list[str]]:
     return list(set(tmp))
 
 
-def train_test_split(X_path: Path, Y_path: Path, sample_rate: int):
+def train_test_split(X_path: Path, Y_path: Path, sample_rate: float):
     X = np.load(X_path)
     Y = pd.read_parquet(Y_path)
 

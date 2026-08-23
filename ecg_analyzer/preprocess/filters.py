@@ -4,7 +4,7 @@ from ecg_analyzer.models import ECGLeads
 
 def remove_baseline_wander(
         leads: ECGLeads,
-        fs: int,
+        fs: float,
         cutoff_hz: float = 0.5,
         order: int = 4
 ) -> ECGLeads:
@@ -26,7 +26,7 @@ def remove_baseline_wander(
 
 def general_waveform_bandpass(
         leads: ECGLeads,
-        fs: int,
+        fs: float,
         lowcut: float = 0.5,
         highcut: float = 40.0,
         order: int = 4
@@ -53,7 +53,7 @@ def general_waveform_bandpass(
 
 def qrs_detection_bandpass(
         leads: ECGLeads,
-        fs: int,
+        fs: float,
         lowcut: float = 5.0,
         highcut: float = 20.0,
         order: int = 4
